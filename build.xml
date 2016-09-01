@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Simple HTTP Server -- Simples" default="all">
+  <property file="ant.local.properties"/>
+  <property file="ant.properties"/>
+  <property name="kotlin.lib" value="${kotlin.dir}/lib"/>
+  <typedef resource="org/jetbrains/kotlin/ant/antlib.xml"
+           classpath="${kotlin.lib}/kotlin-ant.jar"/>
+  
+  
+  <target name="help">
+    <echo>
+
+Targets:
+
+    build, all       Build out/simples.jar
+    install          Install out/simples.jar to ${install.dir}
+    clean            Remove all generated files
+
+    </echo>
+  </target>
+
+  <target name="clean">
+    <delete dir="${out.dir}"/>
+  </target>
+
+
+  <target name="build">
+    <mkdir dir="${out.dir}"/>
+    <kotlinc output="${out.dir}/${out.jar}">
+      <src path="src"/>
+    </kotlinc>
+  </target>
+
+  <target name="check-jar">
+    <available file="${out.dir}/${out.jar}" property="out.jar.present"/>
+  </target>
+  <target name="build-jar-if-needed" unless="out.jar.present">
+    <ant target="build"/>
+  </target>
+    
+
+  <target name="install" depends="check-jar, build-jar-if-needed">
+    <copy file="${out.dir}/${out.jar}" todir="${install.dir}" force="true"
+    	  verbose="true" overwrite="true"/>
+  </target>
+
+  <target name="all-help">
+    <echo>Type "ant help" for a list of targets.</echo>
+  </target>
+
+  <target name="all" depends="all-help, build" />
+</project>
+
