@@ -1,4 +1,6 @@
 
+/* Read stdin, and convert it to a Kotlin byte array declaration.  */
+
 print("    val keystore = byteArrayOf(");
 var i = 0;
 while (true) {
