@@ -84,7 +84,7 @@ class DirectoryQuery(
 	    out.println("""            totalLength += uploadFiles[i].size;""")
 	    out.println("""        }""")
             out.println("""        document.getElementById("result").innerHTML """)
-            out.println("""            = "Length:  " + totalLength + " bytes.";""")
+            out.println("""            = "Length:  " + totalLength.toLocaleString() + " bytes.";""")
             out.println("""    }""")
             out.println("")
 	    out.println("""    var fileNumber = 0;""")
