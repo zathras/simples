@@ -32,12 +32,13 @@ on the command line, and shut down when the file transfer is finished.
 </p><p>
 It implements both file upload and download, and it works with very large
 files -- files over 100 GB have been transferred with it, in both directions.
-It's written in Kotlin, and should run against any Java runtime.
+It's written in 
+<a href="https://en.wikipedia.org/wiki/Kotlin_(programming_language)">Kotlin</a>, and should run against any Java runtime.
 </p> <p>
 Source repository:  
 <a href="https://github.com/zathras/simples/">https://github.com/zathras/simples/</a>
 </p> <p>
-Download executable:  <a href="simples.jar">simples.jar</a>
+Downloadable executable:  <a href="simples.jar">simples.jar</a>
 </p>
 </td>
 </tr>
@@ -82,19 +83,24 @@ in SimpleHttp.java.  You can always use curl, too.
 <p>
 While I was on a business trip, I found myself needing to exchange a
 file that was too big to e-mail with a colleague, and a USB key wasn't
-an options.  I didn't want to wade through a bunch of configuration, so
+an options.  I didn't want to wade through a bunch of configuration on
+file sharing or whatever might be in Windows, so
 I just grabbed some old HTTP server code I had handy, and adapted it.
-It was handy having a really simple, no-configuration HTTP server, so
+Over the next few months, I found
+it to be nice having a really simple, no-configuration HTTP server, so
 I ended up adding some improvements:
 </p>
 <ul>
-<li>I translated it into Kotlin, because I've been playing around
-    with Kotlin and I like it.
+<li>I translated it into
+    <a href="https://en.wikipedia.org/wiki/Kotlin_(programming_language)">Kotlin</a>, 
+    because I'd been playing around with Kotlin and I like it.
 <li>I added an upload feature.  To make that work well, a bit of
-    JavaScript in the browser is required.  I used XMLHttpRequest.
-<li>I made an ant build file and prettied it up a little.  It's still not
-    the most idiomatic Kotlin code in the world, I'm sure, and the nicest
-    thing I can think to say about my foray into JavaScript is
+    JavaScript in the browser is required.  I used 
+    <code>XMLHttpRequest</code>.
+<li>I made an ant build file and generally prettied up the
+    project a little.  It's 
+    still not the most idiomatic Kotlin code in the world, I'm sure, and 
+    the nicest thing I can think to say about my foray into JavaScript is
     &ldquo;it works.&rdquo;
 <li>I added some cheezy https support.  At first, I thought it would be
     a matter of a couple of lines of code; then I remembered about needing
@@ -111,13 +117,13 @@ the <code>server</code> package, which I didn't kotlinify (beyond
 IntelliJ's automatic conversion).
 </p><p>
 If you end up using this and find it useful, feel free to drop me a line!  A
-little one-liner, like &ldquot;I was in an internet cafe in Ljubljana, and I 
-used to grab some photos off my phone&rdquot; would be fun to get.
+little one-liner, like &ldquo;I was in an internet cafe in Ljubljana, and I 
+used to grab some photos off my phone&rdquo; would be fun to get.
 </p>
 <table align="right">
 <tr>
 <td>
-<a href="http://jovial.com/"><i>Bill Foote</i></a>
+<a href="http://jovial.com/"><i>Bill Foote</i></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <td>
   <a href="http://validator.w3.org/check?uri=http%3A%2F%2Fsimples.jovial.com%2F"><img
       align="top" src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional" height="31" width="88"></a>
