@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Simple HTTP Server -- Simples" default="all">
+<project name="Simple HTTP Server -- Simples" default="help">
   <property file="ant.local.properties"/>
   <property file="ant.properties"/>
   <property name="kotlin.lib" value="${kotlin.dir}/lib"/>
@@ -12,9 +12,11 @@
 
 Targets:
 
-    build, all       Build out/simples.jar
+    build            Build out/simples.jar
     install          Install out/simples.jar to ${install.dir}
     clean            Remove all generated files
+    docs             Update the contents of docs
+    all		     Everyting (install and docs)
 
     </echo>
   </target>
@@ -44,10 +46,11 @@ Targets:
     	  verbose="true" overwrite="true"/>
   </target>
 
-  <target name="all-help">
-    <echo>Type "ant help" for a list of targets.</echo>
+  <target name="docs" depends="check-jar, build-jar-if-needed">
+    <copy file="${out.dir}/${out.jar}" todir="docs" force="true"
+    	  verbose="true" overwrite="true"/>
   </target>
 
-  <target name="all" depends="all-help, build" />
+  <target name="all" depends="install, docs" />
 </project>
 
