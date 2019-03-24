@@ -7,9 +7,7 @@ import java.io.IOException
 import java.net.InetAddress
 import java.security.SecureRandom
 
-import server.ErrorQueryHandler
-import server.QueryHandler
-import server.QueryListener
+import server.SimpleHttp
 import java.io.FileInputStream
 
 private fun usage() {
@@ -72,10 +70,15 @@ fun main(args:  Array<String>) {
     }
     val baseDir = File(args[argsUsed+0])
     if (enableSsl) {
-        generateSslKeystore(localInetAddress.hostAddress)
+        generateSslKeystore(server.localInetAddress.hostAddress)
     }
 
-    val sh = SimpleHttp(baseDir, urlBase, port, enableUpload, enableSsl)
+    val logger = object : SimpleHttp.Logger {
+        override fun println(s: String) {
+            System.out.println(s)
+        }
+    }
+    val sh = SimpleHttp(baseDir, urlBase, port, enableUpload, enableSsl, logger)
     println()
     println("Serving files from " + baseDir.canonicalPath
             + " at " + sh.publicURL)

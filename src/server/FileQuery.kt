@@ -1,7 +1,9 @@
-import server.QueryHandler
+package server
 import java.io.*
 
-class FileQuery(var file: File, rawOut: OutputStream, out: PrintWriter) : QueryHandler(rawOut, out) {
+class FileQuery(var file: File, rawOut: OutputStream, out: PrintWriter,
+                val parent: SimpleHttp) : QueryHandler(rawOut, out) 
+{
 
     override fun writeAdditionalHeaders() {
         val l = file.length()
@@ -29,7 +31,7 @@ class FileQuery(var file: File, rawOut: OutputStream, out: PrintWriter) : QueryH
                 rawOut.write(buffer, 0, len)
                 written += len.toLong()
             }
-            println("$file:  Wrote $written bytes.")
+            parent.logger.println("$file:  Wrote $written bytes.")
             rawOut.flush()
             `is`.close()
         } catch (ex: IOException) {

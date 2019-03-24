@@ -1,7 +1,24 @@
+out
 *.class
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+android/app/src/main/assets/simples.pkcs12
+
+# From Android studio:
+
+*.iml
+android/.gradle
+android/local.properties
+android/.idea/caches
+android/.idea/libraries
+android/.idea/modules.xml
+android/.idea/workspace.xml
+android/.idea/navEditor.xml
+android/.idea/assetWizardSettings.xml
+.DS_Store
+android/build
+android/captures
+android/.externalNativeBuild
+
 
 # Package Files #
 *.jar
@@ -10,3 +27,6 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/

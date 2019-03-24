@@ -29,6 +29,8 @@
  * @version 1.2, 8/9/16 (adds TLS/SSL support)
  */
 
+package server
+
 import java.net.InetAddress
 import java.security.SecureRandom
 
@@ -64,17 +66,22 @@ class SimpleHttp(private val baseDir: File,
                  private val urlBase: String,
                  port: Int,
                  private val enableUpload : Boolean,
-                 enableSsl: Boolean)
+                 enableSsl: Boolean,
+                 val logger: Logger)
      : QueryListener(port, enableSsl) {
+
+    interface Logger {
+        public fun println(s: String);
+    }
 
     override fun getHandler(query: String, rawOut: OutputStream, out: PrintWriter): QueryHandler? {
 	var q = query;
         if (!q.startsWith(urlBase)) {
             if (urlBase.length > 1 && q.startsWith(urlBase.dropLast(1))) {
-                System.err.println("Query missing trailing slash:  $q")
+                logger.println("Query missing trailing slash:  $q")
                 return ErrorQueryHandler("Missing trailing slash", rawOut, out)
             } else {
-                System.err.println("Query does not start with $urlBase:  $q")
+                logger.println("Query does not start with $urlBase:  $q")
                 return null
             }
         }
@@ -82,21 +89,21 @@ class SimpleHttp(private val baseDir: File,
         val f = File(baseDir, q)
         try {
             if (!f.canonicalPath.startsWith(baseDir.canonicalPath)) {
-                System.err.println("Rejected query outside directory:  "
+                logger.println("Rejected query outside directory:  "
                         + f + " (" + f.canonicalPath + ")")
                 return ErrorQueryHandler("Illegal directory", rawOut, out)
             } else if (!f.exists()) {
-                System.err.println("File does not exist:  " + f)
+                logger.println("File does not exist:  " + f)
                 return ErrorQueryHandler("File does note exist:  " + f, rawOut, out)
             }
             if (f.isDirectory) {
                 return DirectoryQuery(publicURL, baseDir, f, rawOut, out, enableUpload)
             } else {
-                return FileQuery(f, rawOut, out)
+                return FileQuery(f, rawOut, out, this)
             }
         } catch (ex: IOException) {
-            ex.printStackTrace()
-            println("Query:  " + q)
+            logger.println("Query:  " + q)
+            logger.println("error:  " + ex)
             return ErrorQueryHandler(ex.toString(), rawOut, out)
         }
 
@@ -104,28 +111,28 @@ class SimpleHttp(private val baseDir: File,
 
     override fun handlePost(headers: HashMap<String, String>, input: BufferedInputStream) {
         if (!enableUpload) {
-            println("POST error:  Uploads disabled")
+            logger.println("POST error:  Uploads disabled")
             return;
         }
         val fileName = headers["X-File-Name"]
         val contentLength = headers["Content-Length"]?.toLong()
         val contentType = headers["Content-Type"]
         if (fileName == null) {
-            println("POST error:  No file name")
+            logger.println("POST error:  No file name")
             return;
         }
         if (contentLength == null) {
-            println("POST error:  No content length")
+            logger.println("POST error:  No content length")
             return;
         }
         if (contentType != "application/octet-stream") {
-            println("POST warning:  contentType is $contentType, not application/octet-stream")
-            println("I'll upload it, but you get what you get.")
+            logger.println("POST warning:  contentType is $contentType, not application/octet-stream")
+            logger.println("I'll upload it, but you get what you get.")
         }
         val dir = File(baseDir, "uploads");
         dir.mkdirs();
         val outFile = File(dir, fileName);
-        println("POST data uploading $contentLength bytes to ${outFile.getCanonicalPath()}")
+        logger.println("POST data uploading $contentLength bytes to ${outFile.getCanonicalPath()}")
         val out = BufferedOutputStream(FileOutputStream(outFile))
         try {
             val buffer = ByteArray(1024 * 1024)
@@ -134,13 +141,13 @@ class SimpleHttp(private val baseDir: File,
             var dotCount = 0;
             while (true) {
                 if (remaining <= 0) {
-                    println("Upload complete");
+                    logger.println("Upload complete");
                     break;
                 }
                 val limit = if (remaining < buffer.size) remaining.toInt() else buffer.size;
                 val read = input.read(buffer, 0, limit)
                 if (read == -1) {
-                    println("Upload error:  EOF with $remaining bytes left to read")
+                    logger.println("Upload error:  EOF with $remaining bytes left to read")
                     break;
                 }
                 remaining -= read;

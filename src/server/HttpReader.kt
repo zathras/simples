@@ -65,6 +65,9 @@ class HttpReader(private val socket: Socket, private val queryListener: QueryLis
                     OutputStreamWriter(rawOut)))
             var h: QueryHandler?
             val c1 = input.read()
+            if (c1 == -1) {
+                return
+            }
             val c2 = input.read()
             val c3 = input.read()
             val c4 = input.read()
@@ -117,7 +120,6 @@ class HttpReader(private val socket: Socket, private val queryListener: QueryLis
                 }
             }
             h.run()
-
         } catch (ex: IOException) {
             if (query != null) {
                 System.err.println("Error processing query \"" + query + "\"")

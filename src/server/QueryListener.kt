@@ -8,48 +8,64 @@ package server
  */
 
 
-import java.net.Socket
+import java.net.SocketException
 import java.net.ServerSocket
-import java.net.InetAddress
 
-import java.io.InputStream
 import java.io.BufferedInputStream
 import java.io.IOException
-import java.io.Writer
-import java.io.BufferedWriter
 import java.io.PrintWriter
 import java.io.OutputStream
-import java.io.OutputStreamWriter
-import java.io.BufferedOutputStream
 import java.util.HashMap
+import java.util.concurrent.locks.ReentrantLock
 import javax.net.ssl.SSLServerSocketFactory
+import kotlin.concurrent.withLock
 
 abstract class QueryListener(val port: Int, val enableSsl : Boolean) : Runnable {
+    private val lock = ReentrantLock()
+    private var serverSocket : ServerSocket? = null
+    private var closed = false;
 
     abstract fun getHandler(query: String, rawOut: OutputStream, out: PrintWriter): QueryHandler?
 
     abstract fun handlePost(headers: HashMap<String, String>, input: BufferedInputStream)
 
     override fun run() {
+        lock.withLock {
+            if (closed) {
+                return
+            }
+            serverSocket = if (enableSsl) {
+                SSLServerSocketFactory.getDefault().createServerSocket(port)
+            } else {
+                ServerSocket(port)
+            }
+        }
         try {
             waitForRequests()
+        } catch (ex: SocketException) {
+            if (!closed) {
+                ex.printStackTrace()
+            }
         } catch (ex: IOException) {
             ex.printStackTrace()
-            System.exit(1)
         }
+    }
 
+    fun close() {
+        lock.withLock {
+            closed = true
+            val ss = serverSocket
+            if (ss != null) {
+                ss.close()
+            }
+        }
     }
 
     @Throws(IOException::class)
     private fun waitForRequests() {
-        val ss = if (enableSsl) {
-            SSLServerSocketFactory.getDefault().createServerSocket(port)
-        } else {
-            ServerSocket(port)
-        }
         var last: Thread? = null
         while (true) {
-            val s = ss.accept()
+            val s = serverSocket!!.accept()
             val t = Thread(HttpReader(s, this))
             t.priority = Thread.NORM_PRIORITY - 1
             if (last != null) {
