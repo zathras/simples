@@ -78,7 +78,8 @@ fun main(args:  Array<String>) {
             System.out.println(s)
         }
     }
-    val sh = SimpleHttp(baseDir, urlBase, port, enableUpload, enableSsl, logger)
+    val sh = SimpleHttp(baseDir, urlBase, port, enableUpload, enableSsl, 
+                        "uploads", logger)
     println()
     println("Serving files from " + baseDir.canonicalPath
             + " at " + sh.publicURL)

@@ -67,6 +67,7 @@ class SimpleHttp(private val baseDir: File,
                  port: Int,
                  private val enableUpload : Boolean,
                  enableSsl: Boolean,
+                 private val uploadsSuffix: String,
                  val logger: Logger)
      : QueryListener(port, enableSsl) {
 
@@ -129,7 +130,11 @@ class SimpleHttp(private val baseDir: File,
             logger.println("POST warning:  contentType is $contentType, not application/octet-stream")
             logger.println("I'll upload it, but you get what you get.")
         }
-        val dir = File(baseDir, "uploads");
+        val dir = if (uploadsSuffix == "") {
+            baseDir
+        } else {
+            File(baseDir, uploadsSuffix)
+        }
         dir.mkdirs();
         val outFile = File(dir, fileName);
         logger.println("POST data uploading $contentLength bytes to ${outFile.getCanonicalPath()}")

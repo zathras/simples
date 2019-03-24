@@ -93,7 +93,8 @@ object ServerLauncher {
             if (s != null) {
                 s.close()
             }
-            val ns = SimpleHttp(File(directory), "/" + prefix, port, uploadsOn, tlsOn, logger)
+            val ns = SimpleHttp(File(directory), "/" + prefix, port, 
+                                uploadsOn, tlsOn, "", logger)
             server = ns
             val directoryCopy = directory
             val t = Thread() {
