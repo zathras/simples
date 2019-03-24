@@ -23,6 +23,8 @@ open class ViewLookup {
 
 class MainActivity : AppCompatActivity() {
 
+    private enum class RequestID { STARTUP, GET_DIRECTORY }
+
     private val ui by lazy {
         object : ViewLookup() {
             val portInput : EditText = findView(R.id.portInput)
@@ -89,23 +91,29 @@ class MainActivity : AppCompatActivity() {
             if (!hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 || !hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE))
             {
-                ActivityCompat.requestPermissions(this, arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ), 0)
+                requestStoragePermissions(RequestID.GET_DIRECTORY)
             } else {
                 launchChooseDirectoryDialog()
             }
         }
+        requestStoragePermissions(RequestID.STARTUP)
+    }
+
+    private fun requestStoragePermissions(id: RequestID) {
+        ActivityCompat.requestPermissions(this, arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ), id.ordinal)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 0
-            && permissions.size == 2
-            && grantResults.all { it == PackageManager.PERMISSION_GRANTED })
-        {
+        val granted = permissions.size == 2 && grantResults.all { it == PackageManager.PERMISSION_GRANTED }
+        if (granted && requestCode == RequestID.GET_DIRECTORY.ordinal) {
             launchChooseDirectoryDialog()
+        } else if (!granted){
+            Toast.makeText(this, "I'll run the server anyway.  Press the directory button to re-request",
+                Toast.LENGTH_LONG).show()
         }
     }
 

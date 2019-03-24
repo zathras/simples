@@ -33,7 +33,7 @@ class DirectoryQuery(
     override fun run() {
         startHttpResult(200)
         startHtml("Listing of " + dir)
-        val contents = dir.listFiles()
+        val contents = dir.listFiles() ?: arrayOf<File>()
         Arrays.sort(contents) { f1, f2 -> f1.name.compareTo(f2.name) }
         out.println("<table>")
         for (i in contents.indices) {
