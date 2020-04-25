@@ -8,7 +8,7 @@ class FileQuery(var file: File, rawOut: OutputStream, out: PrintWriter,
     override fun writeAdditionalHeaders() {
         val l = file.length()
         if (l > 0) {
-            out.println("Content-Length: " + l)
+            out.println("Content-Length: " + l + "\r")
         }
     }
 

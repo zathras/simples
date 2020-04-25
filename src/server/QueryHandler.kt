@@ -34,9 +34,11 @@ abstract class QueryHandler(protected val rawOut: OutputStream, protected val ou
     // Send out the http result code.  200 means "good," 404 means "bad."
     //
     protected fun startHttpResult(code: Int) {
-        out.println("HTTP/1.1 $code OK")
-        out.println("Cache-Control: no-cache")
-        out.println("Pragma: no-cache")
+        out.println("HTTP/1.1 $code OK\r")
+        out.println("Cache-Control: no-cache\r")
+        out.println("Pragma: no-cache\r")
+        out.println("Server: simples\r")
+        out.println("Connection: close\r");
         writeAdditionalHeaders()
         out.println()
     }

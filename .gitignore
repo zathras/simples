@@ -1,5 +1,6 @@
 out
 *.class
+.idea
 
 android/app/src/main/assets/simples.pkcs12
 

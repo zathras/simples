@@ -23,7 +23,7 @@ open class ViewLookup {
 
 class MainActivity : AppCompatActivity() {
 
-    private enum class RequestID { STARTUP, GET_DIRECTORY }
+    private enum class RequestID { STARTUP, GET_DIRECTORY, SERVER_ON }
 
     private val ui by lazy {
         object : ViewLookup() {
@@ -39,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val logListener = { line: String ->
+        // Note that initial contents of ui.outputText was set at the moment
+        // we added the listener
         runOnUiThread {
             ui.outputText.append(line)
             ui.outputText.scrollTo(0, Integer.MAX_VALUE )
@@ -80,7 +82,13 @@ class MainActivity : AppCompatActivity() {
         ui.outputText.scrollTo(0, Integer.MAX_VALUE )
 
         ui.servingButton.setOnCheckedChangeListener { _, isChecked ->
-            setServing(isChecked)
+            if (isChecked && (!hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                              || !hasPermission(Manifest.permission.INTERNET)))
+            {
+                requestStoragePermissions(RequestID.SERVER_ON)
+            } else {
+                setServing(isChecked)
+            }
         }
         val stopServing = { _: View, _: Boolean ->
             ui.servingButton.setChecked(false)
@@ -89,20 +97,24 @@ class MainActivity : AppCompatActivity() {
         ui.uploadsButton.setOnCheckedChangeListener(stopServing)
         ui.directoryButton.setOnClickListener { _ : View ->
             if (!hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                || !hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE))
+                || !hasPermission(Manifest.permission.INTERNET))
             {
                 requestStoragePermissions(RequestID.GET_DIRECTORY)
             } else {
                 launchChooseDirectoryDialog()
             }
         }
-        requestStoragePermissions(RequestID.STARTUP)
+        if (!hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            || !hasPermission(Manifest.permission.INTERNET))
+        {
+            requestStoragePermissions(RequestID.STARTUP)
+        }
     }
 
     private fun requestStoragePermissions(id: RequestID) {
         ActivityCompat.requestPermissions(this, arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET
         ), id.ordinal)
     }
 
@@ -111,6 +123,12 @@ class MainActivity : AppCompatActivity() {
         val granted = permissions.size == 2 && grantResults.all { it == PackageManager.PERMISSION_GRANTED }
         if (granted && requestCode == RequestID.GET_DIRECTORY.ordinal) {
             launchChooseDirectoryDialog()
+        } else if (requestCode == RequestID.SERVER_ON.ordinal) {
+            if (!granted) {
+                ui.servingButton.isChecked = false
+            } else {
+                setServing(ui.servingButton.isChecked)
+            }
         } else if (!granted){
             Toast.makeText(this, "I'll run the server anyway.  Press the directory button to re-request",
                 Toast.LENGTH_LONG).show()
