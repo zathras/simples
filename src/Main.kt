@@ -14,6 +14,7 @@ private fun usage() {
     System.err.println()
     System.err.println("Usage:  java -jar simples.jar [-u] [-s] [-p port] dir [prefix]")
     System.err.println("         -u       Enable uploads")
+    System.err.println("         -l       List current directory")
     System.err.println("         -s       https: (insecure self-signed certificate)")
     System.err.println("         -p port  Set port (default 6001)")
     System.err.println("         dir      Directory to serve")
@@ -35,9 +36,13 @@ fun main(args:  Array<String>) {
     var urlBase = ""
     var argsUsed = 0;
     var enableSsl = false;
+    var listing = false;
     while (args.size > argsUsed && args[argsUsed].startsWith("-")) {
         if (args[argsUsed] == "-u") {
             enableUpload = true;
+            argsUsed++;
+        } else if (args[argsUsed] == "-l") {
+            listing = true;
             argsUsed++;
         } else if (args[argsUsed] == "-s") {
             enableSsl = true;
@@ -87,5 +92,14 @@ fun main(args:  Array<String>) {
     println("If you have a problem with port blocking in a browser, see the class header")
     println("in SimpleHttp.java.  You can always use curl, too.")
     println()
+    if (listing) {
+        for (f in baseDir.listFiles().sortedBy{ it.name }) {
+            if (!f.isFile() || f.name.startsWith(".")) {
+                // skip
+            } else {
+                println(sh.publicURL + f.name);
+            }
+        }
+    }
     sh.run()
 }
