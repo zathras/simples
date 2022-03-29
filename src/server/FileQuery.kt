@@ -6,6 +6,9 @@ class FileQuery(var file: File, rawOut: OutputStream, out: PrintWriter,
 {
 
     override fun writeAdditionalHeaders() {
+        if (file.name.endsWith(".html") || file.name.endsWith(".svg")) {
+            out.println("Content-Type: text/html; charset=utf-8\r");
+        }
         val l = file.length()
         if (l > 0) {
             out.println("Content-Length: " + l + "\r")
