@@ -41,7 +41,7 @@ object ServerLauncher {
     var prefix = SecureRandom().nextInt(1_000_000).toString()
         get() = lock.withLock { field }
         set(v) = lock.withLock { field = v }
-    var directory = Environment.getExternalStorageDirectory().absolutePath
+    var directory = ""
         get() = lock.withLock { field }
         set(v) = lock.withLock { field = v }
     val serverOn
@@ -93,7 +93,7 @@ object ServerLauncher {
             if (s != null) {
                 s.close()
             }
-            val ns = SimpleHttp(File(directory), "/" + prefix, port, 
+            val ns = SimpleHttp(File(directory), "/" + prefix + "/", port,
                                 uploadsOn, tlsOn, "", logger)
             server = ns
             val directoryCopy = directory

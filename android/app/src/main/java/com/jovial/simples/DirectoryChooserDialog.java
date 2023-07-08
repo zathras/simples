@@ -17,7 +17,10 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnKeyListener;
 import android.os.Environment;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
+
+import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import android.text.Editable;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -51,10 +54,10 @@ public class DirectoryChooserDialog
         public void onChosenDir(String chosenDir);
     }
 
-    public DirectoryChooserDialog(Context context, ChosenDirectoryListener chosenDirectoryListener)
+    public DirectoryChooserDialog(Context context, String initialDir, ChosenDirectoryListener chosenDirectoryListener)
     {
         m_context = context;
-        m_sdcardDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
+        m_sdcardDirectory = initialDir;
         m_chosenDirectoryListener = chosenDirectoryListener;
 
         try

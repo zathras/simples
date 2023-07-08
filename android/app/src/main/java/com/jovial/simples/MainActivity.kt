@@ -2,19 +2,24 @@ package com.jovial.simples
 
 import android.Manifest
 import android.content.Context
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.app.ActionBar;
-import android.os.Bundle
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Bundle
 import android.os.Environment
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
+import android.os.storage.StorageManager
+import android.os.storage.StorageVolume
+import android.provider.Settings
+import android.text.method.ScrollingMovementMethod
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View;
-import android.widget.*
-import android.text.method.ScrollingMovementMethod
+import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.*
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 
 open class ViewLookup {
@@ -29,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         object : ViewLookup() {
             val portInput : EditText = findView(R.id.portInput)
             val prefixInput : EditText = findView(R.id.prefixInput)
+            val volumeDropdown: Spinner = findView(R.id.volumeDropdown)
             val directoryButton : Button = findView(R.id.directoryButton)
             val directoryText : TextView = findView(R.id.directoryText)
             val servingButton : ToggleButton = findView(R.id.servingButton)
@@ -63,9 +69,44 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    private fun checkManageStoragePermission() {
+        if (!Environment.isExternalStorageManager()) {
+            val uri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                    uri
+                )
+            )
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        checkManageStoragePermission()
+        // m_sdcardDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
+        val volumes: List<String> = this@MainActivity.getSystemService<StorageManager>(
+            StorageManager::class.java
+        ).storageVolumes.map { v : StorageVolume  -> v.directory!!.absolutePath };
+        ui.volumeDropdown.adapter =
+            ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, volumes)
+        ui.volumeDropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                ServerLauncher.directory = volumes[position]
+                ui.directoryText.text = ServerLauncher.directory
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+
+        }
+        ServerLauncher.directory = volumes[0]
         val actionBar = supportActionBar!!
         // actionBar.setDisplayShowHomeEnabled(true)
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME or ActionBar.DISPLAY_USE_LOGO or ActionBar.DISPLAY_SHOW_TITLE)
@@ -82,8 +123,12 @@ class MainActivity : AppCompatActivity() {
         ui.outputText.scrollTo(0, Integer.MAX_VALUE )
 
         ui.servingButton.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                checkManageStoragePermission()
+            }
             if (isChecked && (!hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                              || !hasPermission(Manifest.permission.INTERNET)))
+                        || !hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        || !hasPermission(Manifest.permission.INTERNET)))
             {
                 requestStoragePermissions(RequestID.SERVER_ON)
             } else {
@@ -96,7 +141,9 @@ class MainActivity : AppCompatActivity() {
         ui.tlsButton.setOnCheckedChangeListener(stopServing)
         ui.uploadsButton.setOnCheckedChangeListener(stopServing)
         ui.directoryButton.setOnClickListener { _ : View ->
+            checkManageStoragePermission()
             if (!hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                || !hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 || !hasPermission(Manifest.permission.INTERNET))
             {
                 requestStoragePermissions(RequestID.GET_DIRECTORY)
@@ -105,6 +152,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         if (!hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            || !hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
             || !hasPermission(Manifest.permission.INTERNET))
         {
             requestStoragePermissions(RequestID.STARTUP)
@@ -114,13 +162,14 @@ class MainActivity : AppCompatActivity() {
     private fun requestStoragePermissions(id: RequestID) {
         ActivityCompat.requestPermissions(this, arrayOf(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.INTERNET
         ), id.ordinal)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        val granted = permissions.size == 2 && grantResults.all { it == PackageManager.PERMISSION_GRANTED }
+        val granted = permissions.size == 3 && grantResults.all { it == PackageManager.PERMISSION_GRANTED }
         if (granted && requestCode == RequestID.GET_DIRECTORY.ordinal) {
             launchChooseDirectoryDialog()
         } else if (requestCode == RequestID.SERVER_ON.ordinal) {
@@ -136,7 +185,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun launchChooseDirectoryDialog() {
-        val dialog = DirectoryChooserDialog(this@MainActivity) { dir: String ->
+        val volumeDir : String = ui.volumeDropdown.selectedItem.toString();
+        val dialog = DirectoryChooserDialog(this@MainActivity, volumeDir) { dir: String ->
             ui.directoryText.text = dir
             ServerLauncher.directory = dir
         }

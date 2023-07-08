@@ -76,7 +76,7 @@ class SimpleHttp(private val baseDir: File,
     }
 
     override fun getHandler(query: String, rawOut: OutputStream, out: PrintWriter): QueryHandler? {
-	var q = query;
+        var q = query;
         if (!q.startsWith(urlBase)) {
             if (urlBase.length > 1 && q.startsWith(urlBase.dropLast(1))) {
                 logger.println("Query missing trailing slash:  $q")
@@ -168,7 +168,6 @@ class SimpleHttp(private val baseDir: File,
             out.close()
         }
     }
-
 
     val publicURL: String @Throws(IOException::class)
         get() {

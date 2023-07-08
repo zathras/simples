@@ -45,9 +45,9 @@ class HttpReader(private val socket: Socket, private val queryListener: QueryLis
                 } else {
                     return sb.toString();
                 }
-            } else if (ch == '\r'.toInt()) {
+            } else if (ch == '\r'.code) {
                 // ignore
-            } else if (ch == '\n'.toInt()) {
+            } else if (ch == '\n'.code) {
                 return sb.toString()
             } else {
                 sb.append(ch.toChar())
@@ -71,11 +71,11 @@ class HttpReader(private val socket: Socket, private val queryListener: QueryLis
             val c2 = input.read()
             val c3 = input.read()
             val c4 = input.read()
-            if (c1 == 'G'.toInt() && c2 == 'E'.toInt() && c3 == 'T'.toInt() && c4 == ' '.toInt()) {
+            if (c1 == 'G'.code && c2 == 'E'.code && c3 == 'T'.code && c4 == ' '.code) {
                 val queryBuf = StringBuffer()
                 while(true) {
                     val data = input.read()
-                    if (data == -1 || data == ' '.toInt()) {
+                    if (data == -1 || data == ' '.code) {
                         break;
                     }
                     val ch = data.toChar()
@@ -89,8 +89,8 @@ class HttpReader(private val socket: Socket, private val queryListener: QueryLis
                 }
             } else {
                 val c5 = input.read()
-                if (c1 == 'P'.toInt() && c2 == 'O'.toInt() && c3 == 'S'.toInt() && c4 == 'T'.toInt()
-                        && c5 == ' '.toInt()) {
+                if (c1 == 'P'.code && c2 == 'O'.code && c3 == 'S'.code && c4 == 'T'.code
+                        && c5 == ' '.code) {
                     readLine(input)     // Skip the rest of the query part of the post
                     val headers = HashMap<String, String>()
                     // println("POST seen:")
