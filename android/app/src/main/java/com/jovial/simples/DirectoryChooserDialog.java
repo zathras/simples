@@ -124,7 +124,12 @@ public class DirectoryChooserDialog
             public void onClick(DialogInterface dialog, int item)
             {
                 // Navigate into the sub-directory
-                m_dir += "/" + ((AlertDialog) dialog).getListView().getAdapter().getItem(item);
+                String name = m_dir + "/" +
+                        ((AlertDialog) dialog).getListView().getAdapter().getItem(item);
+                if (!(new File(name)).isDirectory()) {
+                    return;
+                }
+                m_dir = name;
                 updateDirectory();
             }
         }
@@ -195,6 +200,7 @@ public class DirectoryChooserDialog
     private List<String> getDirectories(String dir)
     {
         List<String> dirs = new ArrayList<String>();
+        List<String> files = new ArrayList<String>();
 
         try
         {
@@ -206,25 +212,27 @@ public class DirectoryChooserDialog
 
             for (File file : dirFile.listFiles())
             {
-                if ( file.isDirectory() )
-                {
+                if ( file.isDirectory() ) {
                     dirs.add( file.getName() );
+                } else if (file.isFile()) {
+                    files.add(file.getName());
                 }
             }
         }
         catch (Exception e)
         {
         }
-
-        Collections.sort(dirs, new Comparator<String>()
-        {
-            public int compare(String o1, String o2)
-            {
-                return o1.compareTo(o2);
-            }
-        });
+        Comparator<String> cmp = new Comparator<String>() {
+                    public int compare(String o1, String o2) {
+                        return o1.compareTo(o2);
+                    }
+                };
+        Collections.sort(dirs, cmp);
         dirs.add(0, "..");
-
+        Collections.sort(files, cmp);
+        for (String f : files) {
+            dirs.add(" - " + f);
+        }
         return dirs;
     }
 

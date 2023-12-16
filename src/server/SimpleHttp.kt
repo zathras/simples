@@ -31,28 +31,28 @@
 
 package server
 
-import java.net.InetAddress
-import java.security.SecureRandom
-
-import server.ErrorQueryHandler
-import server.QueryHandler
-import server.QueryListener
 import java.io.*
+import java.net.Inet4Address
+import java.net.InetAddress
 import java.net.NetworkInterface
-import java.net.Inet4Address;
 import java.util.*
 
 public val localInetAddress = getAddress()
 
 private fun getAddress() : InetAddress {
+    val interfaces = ArrayList<NetworkInterface>();
     for (ne in NetworkInterface.getNetworkInterfaces()) {
+        interfaces.add(ne);
+    }
+    interfaces.sortBy { ne -> -ne.mtu };    // Prefer wifi
+    for (ne in interfaces) {
         for (ie in ne.getInetAddresses()) {
             if (!ie.isLoopbackAddress() && ie is Inet4Address) {
                 return ie;
             }
         }
     }
-    for (ne in NetworkInterface.getNetworkInterfaces()) {
+    for (ne in interfaces) {
         for (ie in ne.getInetAddresses()) {
             if (!ie.isLoopbackAddress()) {
                 return ie;
