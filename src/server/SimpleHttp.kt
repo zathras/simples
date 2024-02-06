@@ -52,7 +52,7 @@ private fun getAddress() : InetAddress {
     println();
     interfaces.sortWith { a, b -> 
         if (a.mtu != b.mtu) {
-            a.mtu - b.mtu;      // Prefer Wifi
+            a.mtu - b.mtu;      // Prefer Wifi over mobile network
         } else {
             // Avoid the Ubuntu nxd bridge interface.  Yeah, hacky, I know.
             b.getDisplayName().compareTo(a.getDisplayName());
