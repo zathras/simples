@@ -43,8 +43,21 @@ private fun getAddress() : InetAddress {
     val interfaces = ArrayList<NetworkInterface>();
     for (ne in NetworkInterface.getNetworkInterfaces()) {
         interfaces.add(ne);
+        for (ie in ne.getInetAddresses()) {
+            if (!ie.isLoopbackAddress() && ie is Inet4Address) {
+                println("  " + ne + ":  " + ie);
+            }
+        }
     }
-    interfaces.sortBy { ne -> -ne.mtu };    // Prefer wifi
+    println();
+    interfaces.sortWith { a, b -> 
+        if (a.mtu != b.mtu) {
+            a.mtu - b.mtu;      // Prefer Wifi
+        } else {
+            // Avoid the Ubuntu nxd bridge interface.  Yeah, hacky, I know.
+            b.getDisplayName().compareTo(a.getDisplayName());
+        }
+    }
     for (ne in interfaces) {
         for (ie in ne.getInetAddresses()) {
             if (!ie.isLoopbackAddress() && ie is Inet4Address) {
