@@ -50,14 +50,17 @@ private fun getAddress() : InetAddress {
         }
     }
     println();
-    interfaces.sortWith { a, b -> 
-        if (a.mtu != b.mtu) {
-            a.mtu - b.mtu;      // Prefer Wifi over mobile network
-        } else {
-            // Avoid the Ubuntu nxd bridge interface.  Yeah, hacky, I know.
-            b.getDisplayName().compareTo(a.getDisplayName());
+    val netComparator = object : Comparator<NetworkInterface> {
+        override fun compare(a: NetworkInterface, b: NetworkInterface): Int {
+            if (a.mtu != b.mtu) {
+                return a.mtu - b.mtu;      // Prefer Wifi over mobile network
+            } else {
+                // Avoid the Ubuntu nxd bridge interface.  Yeah, hacky, I know.
+                return b.getDisplayName().compareTo(a.getDisplayName());
+            }
         }
     }
+    interfaces.sortWith(netComparator);
     for (ne in interfaces) {
         for (ie in ne.getInetAddresses()) {
             if (!ie.isLoopbackAddress() && ie is Inet4Address) {
@@ -189,4 +192,3 @@ class SimpleHttp(private val baseDir: File,
         }
 
 }
-
